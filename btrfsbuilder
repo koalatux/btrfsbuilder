@@ -1,5 +1,7 @@
 #!/bin/sh
 #
+# btrfsbuilder - use btrfs snapshots for pbuilder
+#
 # Copyright (c) 2010, Adrian Friedli
 #
 # Permission to use, copy, modify, and/or distribute this software for any
