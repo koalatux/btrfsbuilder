@@ -20,52 +20,79 @@
 
 set -e
 
-BTRFSPATH="/var/cache/pbuilder/btrfs"
-BASEPATH="$BTRFSPATH/base"
-BUILDPLACE="$BTRFSPATH/$$"
+do_help() {
+    echo foo
+    exit 1
+}
+
+for cf in "/etc/btrfsbuilderrc" "$HOME/.btrfsbuilderrc"; do
+    [ -f "$cf" ] && . "$cf"
+done
+
 ACTION="$1"; [ -n "$1" ] && shift
+while true; do
+    case "$1" in
+        --btrfspath)
+            BTRFSPATH="$2";  shift 2 ;;
+        --basedir)
+            BASEDIR="$2";    shift 2 ;;
+        --basepath)
+            BASEPATH="$2";   shift 2 ;;
+        --buildplace)
+            BUILDPLACE="$2"; shift 2 ;;
+        *)
+            break ;;
+    esac
+done
+
+BTRFSPATH=${BTRFSPATH:-"/var/cache/pbuilder/btrfs"}
+BASEDIR=${BASEDIR:-"base"}
+BASEPATH=${BASEPATH:-"$BTRFSPATH/$BASEDIR"}
+BUILDPLACE=${BUILDPLACE:-"$BTRFSPATH/$$"}
 
 pbuilder_run()
 {
-	pbuilder "$ACTION" --buildplace "$BUILDPLACE" --no-targz "$@" || \
-	{
-		RES=$?
-		btrfs_delete
-		return $RES
-	}
+    pbuilder "$ACTION" --buildplace "$BUILDPLACE" --no-targz "$@" || \
+        {
+            RES=$?
+            btrfs_delete
+            return $RES
+        }
 }
 
 btrfs_snapshot() { btrfs subvolume snapshot "$BASEPATH" "$BUILDPLACE"; }
 btrfs_delete() { btrfs subvolume delete "${1:-"$BUILDPLACE"}"; }
 
 case "$ACTION" in
+    ""|-h|--help|help)
+        do_help ;;
     --create|create)
-	btrfs subvolume create "$BASEPATH"
-	BUILDPLACE="$BASEPATH"
-	pbuilder_run "$@"
-	;;
+        btrfs subvolume create "$BASEPATH"
+        BUILDPLACE="$BASEPATH"
+        pbuilder_run "$@"
+        ;;
     --update|update)
-	btrfs_snapshot
-	pbuilder_run "$@"
-	btrfs_delete "$BASEPATH"
-	mv "$BUILDPLACE" "$BASEPATH"
-	;;
+        btrfs_snapshot
+        pbuilder_run "$@"
+        btrfs_delete "$BASEPATH"
+        mv -v "$BUILDPLACE" "$BASEPATH"
+        ;;
     --build|build|--login|login|--execute|execute|--debuild|debuild)
-	btrfs_snapshot
-	pbuilder_run "$@"
-	btrfs_delete
-	;;
+        btrfs_snapshot
+        pbuilder_run "$@"
+        btrfs_delete
+        ;;
     --clean|clean)
-	BUILDPLACE="$BASEPATH"
-	pbuilder_run "$@"
-	btrfs_delete
-	;;
+        BUILDPLACE="$BASEPATH"
+        pbuilder_run "$@"
+        btrfs_delete
+        ;;
     --dumpconfig|dumpconfig)
-	echo "not implemented"
-	exit 1
-	;;
+        echo "not implemented"
+        exit 1
+        ;;
     *)
-	echo "not a valid command"
-	exit 1
-	;;
+        echo "\`$ACTION' is not a valid command. See \`$0 --help' for details."
+        exit 1
+        ;;
 esac

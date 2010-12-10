@@ -1,5 +1,4 @@
 * trap for signals
-* error on arguments: --basetgz --no-targz
-* add option: --buildplace and/or something for BTRFSPATH
+* error on arguments --basetgz and --no-targz respectively
 * write a manpage
-* better error message on invalid commands
+* add a --configfile option
