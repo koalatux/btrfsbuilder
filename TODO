@@ -1,4 +1,3 @@
 * trap for signals
 * error on arguments --basetgz and --no-targz respectively
 * write a manpage
-* add a --configfile option
