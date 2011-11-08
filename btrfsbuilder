@@ -17,6 +17,17 @@
 # as hardlinks between subvolumes are not allowed:
 #
 # APTCACHEHARDLINK=no
+#
+# Using eatmydata will massively increase performance. You may add this to your
+# pbuilderrc:
+#
+# EXTRAPACKAGES="eatmydata"
+# if [ -z "$LD_PRELOAD" ]; then
+#   LD_PRELOAD=/usr/lib/libeatmydata/libeatmydata.so
+# else
+#   LD_PRELOAD="$LD_PRELOAD":/usr/lib/libeatmydata/libeatmydata.so
+# fi
+# export LD_PRELOAD
 
 set -e
 
